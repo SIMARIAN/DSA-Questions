@@ -1,7 +1,4 @@
-class Solution {
-  public:
-    int getSecondLargest(vector<int> &arr) {
-        // code here
+int getSecondLargest(vector<int> &arr) {
         int a1,a2;
         if (arr[0]>arr[1]){
             a1=arr[0];
@@ -21,5 +18,4 @@ class Solution {
                 a1=a1;
             else if (arr[i]>a2)
                 a2=arr[i];}
-        return a2;
-    }};
+        return a2;}

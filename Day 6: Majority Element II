@@ -1,0 +1,13 @@
+vector<int> findMajority(vector<int>& arr) {
+        int n=arr.size();
+        unordered_map<int,int> mp;
+        for (int i:arr)
+            mp[i]++;
+        vector<int> res;
+        for (auto i: mp)
+            if (i.second>n/3)
+                res.push_back(i.first);
+        if (res.size()==2 && res[0]>res[1])
+            swap(res[0],res[1]);
+        return res;
+    } 

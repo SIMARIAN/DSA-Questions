@@ -1,0 +1,13 @@
+int maximumProfit(vector<int> &prices) {
+        int profit=0, localmin=prices[0], localmax=prices[0];
+        for (int i=1;i<prices.size();i++){
+            if (prices[i]<localmin){
+                profit=max(profit,localmax-localmin);
+                localmin=prices[i];
+                localmax=prices[i];}
+            if (prices[i]>localmax)
+                localmax=prices[i];
+        }
+        profit=max(profit,localmax-localmin);
+        return profit;
+    }

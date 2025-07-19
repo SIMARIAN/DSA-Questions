@@ -1,0 +1,13 @@
+int getMinDiff(vector<int> &arr, int k) {
+        int n=arr.size();
+        sort(arr.begin(),arr.end());
+        int res=arr[n-1]-arr[0];
+        int small=arr[0]+k;
+        int large=arr[n-1]-k;
+        for (int i=1;i<n;i++){
+            if (arr[i]-k<0) continue;
+            int minH=min(small,arr[i]-k);
+            int maxH=max(large,arr[i-1]+k);
+            res=min(res,maxH-minH);}
+        return res;
+    }

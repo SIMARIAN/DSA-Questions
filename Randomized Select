@@ -1,0 +1,52 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+int randomizedPartition(vector<int>& arr, int left, int right) {
+    int pivotIndex = left + rand() % (right - left + 1);  
+    swap(arr[pivotIndex], arr[right]);  
+    int pivot = arr[right];
+    int i = left;
+    for (int j = left; j < right; ++j) {
+        if (arr[j] < pivot) {
+            swap(arr[i], arr[j]);  
+            ++i;}}
+    swap(arr[i], arr[right]);  
+    return i;
+}
+int randomizedSelect(vector<int>& arr, int left, int right, int i) {
+    if (left == right) {
+        return arr[left];  }
+    int pivotIndex = randomizedPartition(arr, left, right);
+    int order = pivotIndex - left + 1;  
+    if (i == order)
+        return arr[pivotIndex];
+	else if (i < order)
+        return randomizedSelect(arr, left, pivotIndex - 1, i); 
+    else
+        return randomizedSelect(arr, pivotIndex + 1, right, i - order);  
+}
+int main() {
+    int n;
+    cout << "Enter the number of elements: ";
+    cin >> n;
+    if (n <= 0) {
+        cout << "The number of elements must be greater than zero.\n";
+        return 1;}
+    vector<int> vec;
+    cout << "Enter " << n << " elements:\n";
+    for (int i = 0; i < n; ++i) {
+        int element;
+        cin >> element;
+        vec.push_back(element);  
+    }
+    int i;
+    cout << "Enter the value of i (1 to " << n << "): ";
+    cin >> i;
+    if (i < 1 || i > n) {
+        cout << "Invalid value of i.\n";
+        return 1;}
+    int result = randomizedSelect(vec, 0, vec.size() - 1, i);
+    cout << "The " << i << "-th smallest element is: " << result << endl;
+	return 0;}

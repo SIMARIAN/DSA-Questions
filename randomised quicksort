@@ -1,0 +1,68 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+long long comparison_count = 0;
+int partition(vector<int>& arr, int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    for (int j = low; j <= high - 1; j++) {
+        comparison_count++;
+        if (arr[j] <= pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+int randomized_partition(vector<int>& arr, int low, int high) {
+    int n = high - low + 1;
+    int pivot_index = low + (rand() % n);
+    swap(arr[pivot_index], arr[high]);
+    return partition(arr, low, high);
+}
+
+void randomized_quick_sort(vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int p_index = randomized_partition(arr, low, high);
+        randomized_quick_sort(arr, low, p_index - 1);
+        randomized_quick_sort(arr, p_index + 1, high);
+    }
+}
+
+void print_array(const vector<int>& arr) {
+    for (size_t i = 0; i < arr.size(); ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    srand(time(0));
+    int n;
+    cout << "Enter the number of elements: ";
+    if (!(cin >> n) || n <= 0) {
+        cerr << "Invalid number of elements." << endl;
+        return 1;
+    }
+    vector<int> arr(n);
+    cout << "Enter the " << n << " elements separated by spaces " << endl;
+    for (int i = 0; i < n; ++i) {
+        if (!(cin >> arr[i])) {
+            cerr << "Input error." << endl;
+            return 1;
+        }
+    }
+    vector<int> original_arr = arr;
+    cout << "\nOriginal Array: ";
+    print_array(original_arr);
+    randomized_quick_sort(arr, 0, n - 1);
+    cout << "Sorted Array: ";
+    print_array(arr);
+    cout << "Total Comparisons : " << comparison_count << endl;
+    return 0;
+}

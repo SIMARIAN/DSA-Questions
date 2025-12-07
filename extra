@@ -1,0 +1,427 @@
+//Kruskal’s algorithm. 
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Edge {
+    int u, v;
+    int weight;
+};
+bool compareEdges(const Edge& a, const Edge& b) {
+    return a.weight < b.weight;}
+class DSU {
+private:
+    vector<int> parent;
+    vector<int> size;
+public:
+    DSU(int n) {
+        parent.resize(n);
+        size.assign(n, 1);
+        for (int i = 0; i < n; ++i)
+            parent[i] = i;}
+    int find(int i) {
+        if (parent[i] == i)
+            return i;
+        return parent[i] = find(parent[i]);}
+    bool unite(int i, int j) {
+        int root_i = find(i);
+        int root_j = find(j);
+        if (root_i != root_j) {
+            if (size[root_i] < size[root_j]) {
+                parent[root_i] = root_j;
+                size[root_j] += size[root_i];}
+            else {
+                parent[root_j] = root_i;
+                size[root_i] += size[root_j];}
+            return true;}
+        return false;}
+};
+void kruskal_mst(int num_nodes, vector<Edge>& edges) {
+    sort(edges.begin(), edges.end(), compareEdges);
+    DSU dsu(num_nodes);
+    vector<Edge> mst;
+    long long mst_weight = 0;
+    cout << "\nKruskal's Algorithm MST Construction\n";
+    for (size_t i = 0; i < edges.size(); ++i) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int w = edges[i].weight;
+        if (dsu.unite(u, v)) {
+            mst.push_back(edges[i]);
+            mst_weight += w;
+            cout << "Added Edge: (" << u << "-" << v << ") Weight: " << w << endl;}
+        if (mst.size() == (size_t)(num_nodes - 1))
+            break;}
+    if (num_nodes > 0 && mst.size() == (size_t)(num_nodes - 1)) {
+        cout << "\nMinimum Spanning Tree Edges (" << mst.size() << " total):\n";
+        for (size_t i = 0; i < mst.size(); ++i)
+            cout << " (" << mst[i].u << ", " << mst[i].v << ") Weight: "
+                 << mst[i].weight << endl;
+        cout << "Total MST Weight: " << mst_weight << endl;}
+    else
+        cout << "\nCould not form a complete MST. The graph may be disconnected.\n";
+    cout << endl;
+}
+
+int main() {
+    int num_nodes, num_edges;
+    cout << "Enter the number of nodes (V): ";
+    if (!(cin >> num_nodes) || num_nodes <= 0) {
+        cerr << "Invalid number of nodes." << endl;
+        return 1;}
+    cout << "Enter the number of edges (E): ";
+    if (!(cin >> num_edges) || num_edges < 0) {
+        cerr << "Invalid number of edges." << endl;
+        return 1;}
+    vector<Edge> edges;
+    cout << "\nEnter " << num_edges << " edges in (u v weight) format (0-indexed):\n";
+    for (int i = 0; i < num_edges; ++i) {
+        Edge e;
+        cout << "Edge " << i + 1 << ": ";
+        if (!(cin >> e.u >> e.v >> e.weight)) {
+            cerr << "Input error for edge " << i + 1 << "." << endl;
+            return 1;}
+        if (e.u < 0 || e.u >= num_nodes || e.v < 0 || e.v >= num_nodes) {
+            cerr << "Node index out of range (0 to " << num_nodes - 1 << ").\n";
+            return 1;}
+        edges.push_back(e);
+    }
+    kruskal_mst(num_nodes, edges);
+    return 0;
+}
+
+// bellman ford
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <limits>
+using namespace std;
+const int INF = numeric_limits<int>::max();
+struct Edge {
+    int u, v;
+    int weight;
+};
+void bellman_ford(int num_nodes, const vector<Edge> &edges, int source) {
+    vector<int> dist(num_nodes, INF);
+    dist[source] = 0;
+    cout << "\nBellman-Ford Algorithm (Source: " << source << ")\n";
+    for (int i = 1; i < num_nodes; ++i) {
+        bool updated = false;
+        for (size_t j = 0; j < edges.size(); ++j) {
+            int u = edges[j].u;
+            int v = edges[j].v;
+            int weight = edges[j].weight;
+            if (dist[u] != INF && dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                updated = true;}}
+        if (!updated) break;}
+    bool has_negative_cycle = false;
+    for (size_t j = 0; j < edges.size(); ++j) {
+        int u = edges[j].u;
+        int v = edges[j].v;
+        int weight = edges[j].weight;
+        if (dist[u] != INF && dist[u] + weight < dist[v]) {
+            has_negative_cycle = true;
+            break;}}
+    if (has_negative_cycle) {
+        cout << "Graph contains a negative-weight cycle reachable from the source node.\n";
+        cout << "Shortest paths are undefined.\n";}
+    else {
+        cout << "Shortest Paths from Source Node " << source << ":\n";
+        for (int i = 0; i < num_nodes; ++i) {
+            cout << " Node " << i << ": ";
+            if (dist[i] == INF)
+                cout << "Unreachable\n";
+            else
+                cout << dist[i] << "\n";}}
+    cout << endl;
+}
+
+int main() {
+    int num_nodes, num_edges, source;
+    cout << "Enter the number of nodes (V): ";
+    if (!(cin >> num_nodes) || num_nodes <= 0) {
+        cerr << "Invalid number of nodes.\n";
+        return 1;}
+    cout << "Enter the number of edges (E): ";
+    if (!(cin >> num_edges) || num_edges < 0) {
+        cerr << "Invalid number of edges.\n";
+        return 1;}
+    vector<Edge> edges;
+    cout << "\nEnter " << num_edges << " edges in (u v weight) format (0-indexed nodes):\n";
+    for (int i = 0; i < num_edges; ++i) {
+        Edge e;
+        cout << "Edge " << i + 1 << " (u v weight): ";
+        if (!(cin >> e.u >> e.v >> e.weight)) {
+            cerr << "Input error for edge " << i + 1 << ".\n";
+            return 1;}
+        if (e.u < 0 || e.u >= num_nodes || e.v < 0 || e.v >= num_nodes) {
+            cerr << "Node index out of range (0 to " << num_nodes - 1 << ").\n";
+            return 1;}
+        edges.push_back(e);}
+    cout << "Enter the source node (0 to " << num_nodes - 1 << "): ";
+    if (!(cin >> source) || source < 0 || source >= num_nodes) {
+        cerr << "Invalid source node.\n";
+        return 1;}
+    bellman_ford(num_nodes, edges, source);
+    return 0;
+}
+
+// btrees
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+using namespace std;
+class BTree;
+class BTreeNode {
+ public:
+  int t;
+  bool leaf;
+  vector<int> keys;
+  vector<BTreeNode*> children;
+  BTreeNode(int min_degree, bool is_leaf) {
+    t = min_degree;
+    leaf = is_leaf;
+  }
+  ~BTreeNode() {
+    if (!leaf) {
+      for (size_t i = 0; i < children.size(); ++i) {
+        delete children[i];
+      }
+    }
+  }
+  friend class BTree;
+};
+class BTree {
+ private:
+  BTreeNode* root;
+  int t;
+  void _split_child(BTreeNode* parent_node, int i, BTreeNode* child_node) {
+    BTreeNode* new_node = new BTreeNode(t, child_node->leaf);
+    int median_index = t - 1;
+    parent_node->keys.insert(parent_node->keys.begin() + i, child_node->keys[median_index]);
+    parent_node->children.insert(parent_node->children.begin() + i + 1, new_node);
+    new_node->keys.insert(new_node->keys.begin(), child_node->keys.begin() + t, child_node->keys.end());
+    child_node->keys.erase(child_node->keys.begin() + median_index, child_node->keys.end());
+    if (!child_node->leaf) {
+      new_node->children.insert(new_node->children.begin(), child_node->children.begin() + t, child_node->children.end());
+      child_node->children.erase(child_node->children.begin() + t, child_node->children.end());
+    }
+  }
+  void _insert_non_full(BTreeNode* node, int k) {
+    int i = (int)node->keys.size() - 1;
+    if (node->leaf) {
+      node->keys.push_back(0);
+      while (i >= 0 && k < node->keys[i]) {
+        node->keys[i + 1] = node->keys[i];
+        i--;
+      }
+      node->keys[i + 1] = k;
+    } else {
+      while (i >= 0 && k < node->keys[i]) {
+        i--;
+      }
+      i++;
+      BTreeNode* child = node->children[i];
+      if (child->keys.size() == (size_t)(2 * t - 1)) {
+        _split_child(node, i, child);
+        if (k > node->keys[i]) {
+          i++;
+        }
+      }
+      _insert_non_full(node->children[i], k);
+    }
+  }
+ public:
+  BTree(int min_degree) {
+    t = min_degree;
+    root = new BTreeNode(t, true);
+  }
+  ~BTree() {
+    delete root;
+  }
+  void insert(int k) {
+    BTreeNode* r = root;
+    if (r->keys.size() == (size_t)(2 * t - 1)) {
+      BTreeNode* s = new BTreeNode(t, false);
+      s->children.push_back(r);
+      root = s;
+      _split_child(s, 0, r);
+      _insert_non_full(s, k);
+    } else {
+      _insert_non_full(r, k);
+    }
+  }
+  void print_tree(BTreeNode* node, int level) {
+    if (node == NULL) return;
+    for (int i = 0; i < level; ++i) {
+      cout << " ";
+    }
+    cout << "Level " << level << " [";
+    for (size_t i = 0; i < node->keys.size(); ++i) {
+      cout << node->keys[i];
+      if (i < node->keys.size() - 1) cout << ", ";
+    }
+    cout << "] ";
+    if (node->leaf) cout << "(Leaf)";
+    else cout << "(Internal)";
+    cout << endl;
+    if (!node->leaf) {
+      for (size_t i = 0; i < node->children.size(); ++i) {
+        print_tree(node->children[i], level + 1);
+      }
+    }
+  }
+  void print() {
+    print_tree(root, 0);
+  }
+};
+int main() {
+  int t_degree;
+  cout << "Enter the minimum degree 't' (t >= 2): ";
+  if (!(cin >> t_degree) || t_degree < 2) {
+    cerr << "Invalid minimum degree. 't' must be 2 or greater." << endl;
+    return 1;
+  }
+  BTree tree(t_degree);
+  cout << "Enter keys to insert (space separated integers, end with a non-integer):" << endl;
+  int key;
+  vector<int> inserted_keys;
+  while (cin >> key) {
+    tree.insert(key);
+    inserted_keys.push_back(key);
+  }
+  cout << "\nKeys Inserted (" << inserted_keys.size() << "): ";
+  for (size_t i = 0; i < inserted_keys.size(); ++i) {
+    cout << inserted_keys[i];
+    if (i < inserted_keys.size() - 1) cout << ", ";
+  }
+  cout << endl;
+  cout << "\nFinal B-Tree Structure (t=" << t_degree << "):" << endl;
+  tree.print();
+  return 0;
+}
+
+// Suffix tree
+
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+struct Edge;
+struct Node {
+    vector<Edge*> edges;   // children
+    bool isLeaf = false;
+};
+struct Edge {
+    Node* to;
+    int start;     // label = T[start ... end]
+    int end;
+};
+class SuffixTree {
+public:
+    Node* root;
+    string T;
+    SuffixTree(const string& text) : T(text) {
+        root = new Node();
+        build();}
+    void build() {
+        int n = T.size();
+        for (int i = 0; i < n; ++i)
+            insertSuffix(i);}
+    // insert suffix T[i...end]
+    void insertSuffix(int pos) {
+        Node* current = root;
+        int n = T.size();
+        int i = pos;
+        while (i < n) {
+            // Try to find an outgoing edge starting with T[i]
+            Edge* edge = 0;
+            for (int k = 0; k < (int)current->edges.size(); k++) {
+                Edge* e = current->edges[k];
+                if (T[e->start] == T[i]) {
+                    edge = e;
+                    break;}}
+            if (!edge) {
+                // no matching edge ? create new leaf
+                createLeaf(current, i, n - 1);
+                return;}
+            // match along the edge
+            int k = edge->start;
+            while (k <= edge->end && i < n && T[k] == T[i]) {
+                k++;
+                i++;}
+            if (k > edge->end) {
+                // Entire edge label matched
+                current = edge->to;
+                if (i == n) {
+                    // Suffix fully matched ? mark leaf
+                    current->isLeaf = true;
+                    return;}
+                if (current->isLeaf) {
+                    // Extend leaf edge
+                    extendLeaf(edge, i, n - 1);
+                    return;}
+                // else continue matching at next node}
+            else {
+                // Partial match ? need to split edge
+                splitEdge(current, edge, k, i, pos);
+                return;}}}
+    // Create a leaf edge from node
+    void createLeaf(Node* node, int start, int end) {
+        Node* leaf = new Node();
+        leaf->isLeaf = true;
+        Edge* e = new Edge();
+        e->start = start;
+        e->end = end;
+        e->to = leaf;
+        node->edges.push_back(e);}
+    // Extend a leaf edge label
+    void extendLeaf(Edge* edge, int start, int end) {
+        // Just extend the end index of the current leaf's edge
+        edge->end = end;}
+    // Split an edge at position k in the label, where k is the
+    // character index in T that is the first mismatch
+    void splitEdge(Node* parent, Edge* edge, int splitPos, int suffixPos, int suffixStart) {
+        // Create new internal node
+        Node* internal = new Node();
+        // New edge from parent to internal
+        Edge* newEdge = new Edge();
+        newEdge->start = edge->start;
+        newEdge->end = splitPos - 1;
+        newEdge->to = internal;
+        // Replace old edge with this one
+        for (int i = 0; i < (int)parent->edges.size(); i++) {
+            if (parent->edges[i] == edge) {
+                parent->edges[i] = newEdge;
+                break;}
+        // Adjust old edge label
+        edge->start = splitPos;
+        // Now edge starts from internal
+        internal->edges.push_back(edge);
+        // Create leaf representing unmatched part of suffix
+        createLeaf(internal, suffixPos, T.size() - 1);}
+    void print() {
+        cout << "Suffix Tree:\n";
+        printDFS(root, 0);}
+    void printDFS(Node* node, int depth) {
+        string indent(depth * 2, ' ');
+        for (int i = 0; i < (int)node->edges.size(); i++) {
+            Edge* e = node->edges[i];
+            // print edge label
+            cout << indent;
+            cout << T.substr(e->start, e->end - e->start + 1) << "\n";
+            printDFS(e->to, depth + 1);}}
+};
+int main() {
+    string T = "waterbody";
+    SuffixTree tree(T);
+    tree.print();
+    return 0;
+}
